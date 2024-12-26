@@ -1,0 +1,14 @@
+[Unit]
+Description=Lotto Bot Service
+After=network.target
+
+[Service]
+Type=simple
+User=gyeony
+WorkingDirectory=/home/gyeony/dev/lotto_buy
+Environment=PATH=/home/gyeony/dev/lotto_buy/venv/bin
+ExecStart=/home/gyeony/dev/lotto_buy/venv/bin/python3 /home/gyeony/dev/lotto_buy/lotto_buy.py
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
