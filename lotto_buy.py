@@ -11,6 +11,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from dotenv import load_dotenv
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
+import sys
 
 load_dotenv()
 
@@ -90,7 +91,7 @@ def buy_lotto():
         # 잔액에서 숫자만 추출하여 정수로 변환
         try:
             balance_amount = int(balance_before.replace('원', '').replace(',', ''))
-            
+
             # 잔액이 5000원 미만인 경우
             if balance_amount < 5000:
                 current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -98,7 +99,7 @@ def buy_lotto():
                 message += f"- 현재 잔액: {balance_before}\n"
                 message += "- 구매 실패 사유: 잔액 부족\n"
                 message += "- 필요 금액: 5,000원"
-                
+
                 # Slack으로 결과 전송
                 send_slack_message(message)
                 print(message)
@@ -159,12 +160,18 @@ def buy_lotto():
         driver.quit()
 
 def main():
-    # 매주 토요일 오전 8:30에 실행
-    schedule.every().saturday.at("08:30").do(buy_lotto)
-    
-    while True:
-        schedule.run_pending()
-        time.sleep(60)
+    # 커맨드 라인 인자 확인
+    if len(sys.argv) > 1 and sys.argv[1] == '--test':
+        print("테스트 모드로 실행합니다...")
+        buy_lotto()
+    else:
+        print("스케줄러 모드로 실행합니다...")
+        # 매주 토요일 오전 8:30에 실행
+        schedule.every().saturday.at("08:30").do(buy_lotto)
+        
+        while True:
+            schedule.run_pending()
+            time.sleep(60)
 
 if __name__ == "__main__":
     main()

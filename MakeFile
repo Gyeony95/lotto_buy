@@ -6,3 +6,6 @@ test_lotto_login:
 
 buy_lotto:
 	python lotto_buy.py
+
+buy_test:
+	python lotto_buy.py --test
