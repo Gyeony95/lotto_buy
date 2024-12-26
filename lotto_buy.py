@@ -34,10 +34,10 @@ def get_balance(driver, wait):
         driver.get('https://dhlottery.co.kr/userSsl.do?method=myPage')
         time.sleep(2)
         
-        # 예치금 잔액 확인
-        balance_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, '.content_row .content_title + p')))
-        balance_text = balance_element.text.strip()
-        return balance_text
+        # 예치금 잔액 확인 (새로운 선택자 사용)
+        balance_element = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, "p.total_new strong")))
+        amount = balance_element.text.strip()
+        return f"{amount}원"
     except Exception as e:
         print(f"잔액 확인 실패: {str(e)}")
         return "잔액 확인 실패"
@@ -49,29 +49,66 @@ def buy_lotto():
     options.add_argument('--disable-gpu')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--disable-blink-features=AutomationControlled')
+    options.add_experimental_option('excludeSwitches', ['enable-automation'])
+    options.add_experimental_option('useAutomationExtension', False)
     
     # WebDriver 초기화
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     wait = WebDriverWait(driver, 20)
     
     try:
+        # 자동화 감지 우회를 위한 JavaScript 실행
+        driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
+        
         # 동행복권 로그인 페이지로 이동
         driver.get('https://dhlottery.co.kr/user.do?method=login')
+        time.sleep(3)
         
         # 로그인
-        id_input = wait.until(EC.presence_of_element_located((By.ID, 'userId')))
-        pw_input = driver.find_element(By.ID, 'password')
+        id_input = wait.until(EC.presence_of_element_located((By.NAME, "userId")))
+        pw_input = wait.until(EC.presence_of_element_located((By.NAME, "password")))
         
+        id_input.clear()
+        time.sleep(1)
         id_input.send_keys(os.getenv('LOTTO_ID'))
-        pw_input.send_keys(os.getenv('LOTTO_PW'))
+        time.sleep(1)
         
-        login_btn = driver.find_element(By.ID, 'btnLogin')
-        login_btn.click()
-        time.sleep(2)
+        pw_input.clear()
+        time.sleep(1)
+        pw_input.send_keys(os.getenv('LOTTO_PW'))
+        time.sleep(1)
+        
+        # 로그인 버튼 클릭
+        login_btn = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "a.btn_common.lrg.blu")))
+        driver.execute_script("check_if_Valid3();")
+        time.sleep(5)  # 로그인 처리 대기
         
         # 구매 전 잔액 확인
         balance_before = get_balance(driver, wait)
         
+        # 잔액에서 숫자만 추출하여 정수로 변환
+        try:
+            balance_amount = int(balance_before.replace('원', '').replace(',', ''))
+            
+            # 잔액이 5000원 미만인 경우
+            if balance_amount < 5000:
+                current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                message = f" 로또 구매 실패 ({current_time})\n"
+                message += f"- 현재 잔액: {balance_before}\n"
+                message += "- 구매 실패 사유: 잔액 부족\n"
+                message += "- 필요 금액: 5,000원"
+                
+                # Slack으로 결과 전송
+                send_slack_message(message)
+                print(message)
+                return
+                
+        except ValueError as e:
+            print(f"잔액 변환 실패: {str(e)}")
+            return
+            
+        # 잔액이 충분한 경우 구매 진행
         # 로또 구매 페이지로 이동
         driver.get('https://el.dhlottery.co.kr/game/TotalGame.jsp?LottoId=LO40')
         
