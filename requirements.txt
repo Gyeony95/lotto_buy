@@ -1,0 +1,5 @@
+selenium==4.16.0
+schedule==1.2.1
+python-dotenv==1.0.0
+webdriver_manager==4.0.1
+slack-sdk==3.26.1
