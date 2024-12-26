@@ -45,15 +45,24 @@ def get_balance(driver, wait):
 
 def buy_lotto():
     # Chrome 옵션 설정
+    # options = webdriver.ChromeOptions()
+    # options.add_argument('--start-maximized')
+    # options.add_argument('--disable-gpu')
+    # options.add_argument('--no-sandbox')
+    # options.add_argument('--disable-dev-shm-usage')
+    # options.add_argument('--disable-blink-features=AutomationControlled')
+    # options.add_experimental_option('excludeSwitches', ['enable-automation'])
+    # options.add_experimental_option('useAutomationExtension', False)
+    
     options = webdriver.ChromeOptions()
-    options.add_argument('--start-maximized')
-    options.add_argument('--disable-gpu')
+    options.add_argument('--headless=new')  # 새로운 headless 모드
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
-    options.add_argument('--disable-blink-features=AutomationControlled')
-    options.add_experimental_option('excludeSwitches', ['enable-automation'])
-    options.add_experimental_option('useAutomationExtension', False)
-    
+    options.add_argument('--disable-gpu')  # Linux에서 필요한 경우가 있음
+    options.add_argument('--window-size=1920,1080')  # 창 크기 설정
+    # 만약 크롬 위치가 다르다면 바이너리 위치도 지정
+    options.binary_location = "/usr/bin/google-chrome"  # 또는 "/opt/google/chrome/chrome"
+
     # WebDriver 초기화
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     wait = WebDriverWait(driver, 20)
