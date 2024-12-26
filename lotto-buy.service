@@ -5,10 +5,13 @@ After=network.target
 [Service]
 Type=simple
 User=gyeony
+Group=gyeony
 WorkingDirectory=/home/gyeony/dev/lotto_buy
-Environment=PATH=/home/gyeony/dev/lotto_buy/venv/bin
+Environment="PATH=/home/gyeony/dev/lotto_buy/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+Environment="PYTHONPATH=/home/gyeony/dev/lotto_buy"
 ExecStart=/home/gyeony/dev/lotto_buy/venv/bin/python3 /home/gyeony/dev/lotto_buy/lotto_buy.py
-Restart=always
+Restart=on-failure
+RestartSec=5s
 
 [Install]
 WantedBy=multi-user.target

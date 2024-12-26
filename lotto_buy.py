@@ -59,14 +59,16 @@ def buy_lotto():
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
     options.add_argument('--disable-gpu')
-    options.add_argument('--window-size=1920,1080')
     options.add_argument('--disable-setuid-sandbox')
-    options.add_argument('--remote-debugging-port=9222')
+    options.add_argument('--window-size=1920,1080')
 
-    # Chrome 바이너리 위치 지정
+    # Chrome 실행 경로 명시적 지정
     options.binary_location = "/usr/bin/google-chrome"
-    
 
+    # 디버그 로그 추가
+    import logging
+    logging.basicConfig(filename='bot.log', level=logging.INFO)
+    
     # WebDriver 초기화
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
     wait = WebDriverWait(driver, 20)
