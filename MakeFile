@@ -1,0 +1,8 @@
+activate_venv:
+	source lotto_buy/bin/activate
+
+test_lotto_login:
+	python test_lotto_login.py
+
+buy_lotto:
+	python lotto_buy.py
